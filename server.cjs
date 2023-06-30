@@ -2,6 +2,7 @@ const mongoose = require('mongoose');
 const express = require('express');
 const dotenv = require('dotenv');
 const Item = require('./models/Item.cjs');
+const Veggie = require('./models/Veggie.cjs');
 
 const app = express();
 app.use(express.json());
@@ -34,6 +35,65 @@ app.post('/items', async (req, res) => {
         })
     }
 });
+
+app.post('/create_veggie', async (req, res) => {
+    const { price, name } = req.body;
+
+    if (!price || !name) {
+        return res.status(400).json({
+            error: "Wrong fields for Veggie"
+        })
+    }
+
+    try {
+        const veggie = await Veggie.create({ price, name });
+
+        res.status(201).json(veggie);
+    } catch (e) {
+        res.status(500).json({
+            error: "Unexpected error"
+        })
+    }
+
+})
+
+app.get('/veggies', async (req, res) => {
+    try {
+        const veggies = await Veggie.find();
+
+        res.status(200).json(veggies);
+    } catch (e) {
+        res.status(500).json({
+            error: "Unexpected error"
+        })
+    }
+});
+
+app.get('/veggie/:veggieName', async (req, res) => {
+    const { veggieName } = req.params;
+
+    if (!veggieName) {
+        return res.status(400).json({
+            error: "Veggie name not found in params"
+        })
+    }
+
+    try {
+        const veggie = await Veggie.find({ name: veggieName });
+
+        if (!veggie) {
+            return res.status(404).json({
+                error: "Veggie was not found"
+            })
+        }
+
+        res.status(200).json(veggie);
+    } catch (e) {
+        res.status(500).json({
+            error: "Unexpected error"
+        })
+    }
+})
 
 const start = async () => {
     try {
